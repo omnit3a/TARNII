@@ -1,0 +1,21 @@
+#ifndef OPCODES_H_
+#define OPCODES_H_
+
+#define NOP 0x00
+#define PSH 0xFF
+#define DUP 0xCC
+#define DSP 0x0A
+#define CMP 0x55
+#define ADD 0xC3
+#define BRL 0x18
+#define NND 0xE7
+#define HNE 0x48
+#define HOP 0x84
+#define LZF 0xEE
+#define OUT 0x02
+#define OIN 0x04
+#define STO 0x08
+#define LOD 0x10
+#define HLT 0xBB
+
+#endif

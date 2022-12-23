@@ -1,0 +1,119 @@
+TARNII CPU Architecture
+(Totally Awesome Retro Number-cruncher Two)
+By Fostyr Sloan
+
+## GENERAL INFO ##
+TARNII is a Stack-based CPU Architecture designed for use in homebrew/hobby computer systems.
+TARNII does not have general purpose registers, instead using a 256 byte long stack to store data.
+
+There are two 8-bit registers in TARNII and one 16-bit register.
+The 16-bit register is the Program Counter and the two 8-bit registers are the Stack Pointer and the Status Register.
+
+## STATUS REGISTER ##
+Currently, there are only three status bits, but future revisions of the design may have more.
+
+What each bit represents (from least significant bit to most significant bit):
+1.) ZERO FLAG	[FLAG 0]
+2.) CARRY FLAG	[FLAG 1]
+3.) EQUAL FLAG	[FLAG 2]
+
+What each flag represents:
+ZERO FLAG: 	this flag is set to one if an arithmetic/logic operation yields the value zero. 
+		it is set to zero if the an arithmetic/logic operation yields anything BUT zero.
+CARRY FLAG:	if an addition operation is completed and the sum overflowed, then this flag is set to one.
+		otherwise, this flag is set to zero.
+		this flag is also set to one by the XOR operation.
+EQUAL FLAG:	if a two numbers are the same in a comparison operation, then this flag is set to one.
+		otherwise, this bit is set to zero.
+
+## STACK OPERATIONS##
+The stack Pointer may be manipulated to point to other areas, thus allowing random access to the stack.
+If the stack overflows or underflows, the stack pointer wraps around. This is an intended feature.
+
+When a memory address is popped from the stack, it is popped in the order of
+1.) Pop lower half of address
+2.) Pop upper half of address
+This operation's shorthand is [ADDRPOP]
+
+When two numbers are popped from the stack, they are are popped in this order
+1.) Pop number A
+2.) Pop number B
+This operation's shorthand is [VALPOP]
+
+## IO ##
+TARNII has four IO related outputs, those being:
+1.) MREQ (Active low)
+2.) IORQ (Active low)
+3.) RDWR (Read is indicated by a low signal)
+4.) REST (Active low)
+
+What each output represents:
+MREQ:	pulled low when accessing memory (low by default)
+IORQ:	pulled low when accessing IO devices (high by default)
+RDWR:	pulled low if reading from memory, pulled high if writing to memory (low by default)
+REST:	resets the CPU if pulled high and the most recent opcode was not HLT. if the most recent opcode WAS HLT, then resume operation if pulled high
+
+## OPCODES ##
+All opcodes are two-byte aligned. The opcode is the first byte and the operand is the second byte.
+If an opcode description does not have [OPERAND] in its description, the operand doesn't matter.
+
+TARNII has 16 opcodes, those being:
+0x00:	NOP	= no operation
+0xFF:	PSH	= push [OPERAND] to the stack
+0xCC:	DUP	= get the value currently pointed to by the stack pointer (without popping it), then push that value to the stack
+0x0A:	DSP	= decrement stack pointer by one
+0x55:	CMP	= [VALPOP] two values and compare them
+0xC3:	ADD	= [VALPOP] two values and add them together with carry, then push the result onto the stack
+0x18:	BRL	= bitwise rotate number A of [VALPOP] left by the amount of places specified by number B
+0xE7:	NND	= [VALPOP] two values and bitwise NAND them, then push the result onto the stack
+0x48: 	HNE	= if the equal flag is set to zero, then set the program counter to [ADDRPOP]
+0x84:	HOP	= set the program counter to [ADDRPOP]
+0xEE:	LZF	= set the flag specified by [OPERAND] to number A of [VALPOP]
+// currently, only the above opcodes work correctly in the emulator
+0x02:	OUT	= pull the MREQ line high, pull the IORQ line low, set the address bus to [ADDRPOP], set the data bus to number A of [VALPOP]. do these in order
+0x04:	OIN	= pull the MREQ line high, pull the IORQ line low, set the address bus to [ADDRPOP], push the value on the data bus onto the stack. do these in order
+0x08:	STO	= pull the MREQ line low, set the address bus to [ADDRPOP], set the data bus to number A of [VALPOP]. do these in order
+0x10:	LOD	= pull the MREQ line low, set the address bus to [ADDRPOP], push the value on the data bus to the stack. do these in order
+0xBB:	HLT	= halt the cpu until a REST signal is recieved
+
+## CODE EXAMPLES ##
+How to add two numbers:
+In this example, we will be calculating 5 + 3, outputting the result to the data bus, then halting operation of the CPU.
+Code:
+	PSH 0x00	; Clear the carry flag
+	PSH 0x00	;
+	LZF 0x01	;
+	
+	PSH 0x05	; Push the value 5 to the stack
+	PSH 0x03	; Push the value 3 to the stack
+	
+	ADD		; Add the two top values on the stack
+	
+	PSH 0x00	; Set the output address for the upcoming OUT opcode to 0x00
+	DUP		; 
+	OUT		; Output the result
+	
+	HLT		; Halt operation
+	
+How to subtract two numbers:
+In this example, we will be calculating 10 - 6, outputting the result to the data bus, the halting operation of the CPU.
+Subtraction can be done with the addition opcode by first setting the carry bit to one, then negating the subtrahend of the equation.
+Code:
+	PSH 0x00	; Set the carry flag to one
+	PSH 0x01	;
+	LZF 0x01	;
+	
+	PSH 0x06	; Push the value 6 to the stack. Values for the subtraction must be pushed in reverse order
+
+	DUP		; Duplicate the top value on the stack for the upcoming NND operation
+	NND		; Bitwise NAND the top two values on the stack
+	
+	PSH 0x0A	; Push the value 10 to the stack
+	
+	ADD		; Use the addition opcode to subtract two numbers
+	
+	PSH 0x00	; Set the output address for the upcoming OUT opcode to 0x00
+	DUP		; 
+	OUT		; Output the result
+	
+	HLT		; Halt operation
