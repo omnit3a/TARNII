@@ -54,7 +54,7 @@ int main(int argc, char ** argv){
 		tempReg = 0x00;
 		tempRegB = 0x00;
 		if (memory[programCounter] != 0x00){
-			printf("%x %d\n",memory[programCounter],programCounter);
+			printf("0x%x %d\n",memory[programCounter],programCounter);
 		}
 		switch (memory[programCounter]){
 			case NOP:
@@ -63,12 +63,12 @@ int main(int argc, char ** argv){
 			case PSH:
 				tempData = memory[programCounter+1];
 				pushToStack(tempData);
-				fprintf(log,"STACK PUSH RESULT: %x\n",tempData);
+				fprintf(log,"STACK PUSH RESULT: 0x%x\n",tempData);
 				programCounter+=2;
 				break;
 			case DUP:
 				pushToStack(stack[stackPointer]);
-				fprintf(log,"STACK DUPLICATE RESULT: %x\n",stack[stackPointer]);
+				fprintf(log,"STACK DUPLICATE RESULT: 0x%x\n",stack[stackPointer]);
 				programCounter+=2;
 				break;
 			case DSP:
@@ -87,7 +87,7 @@ int main(int argc, char ** argv){
 				tempRegB = popFromStack();
 				tempReg = tempReg + tempRegB + carryFlag;
 				pushToStack(tempReg);
-				fprintf(log,"ADDITION WITH CARRY RESULT: %x\n",tempReg);
+				fprintf(log,"ADDITION WITH CARRY RESULT: 0x%x\n",tempReg);
 				programCounter+=2;
 				break;
 			case BRL:
@@ -98,7 +98,7 @@ int main(int argc, char ** argv){
 					tempReg = (tempReg << 1) | droppedMSB;
 				}
 				pushToStack(tempReg);
-				fprintf(log,"BIT ROTATE LEFT BY %x RESULT: %x\n",tempRegB,tempReg);
+				fprintf(log,"BIT ROTATE LEFT BY %x RESULT: 0x%x\n",tempRegB,tempReg);
 				programCounter+=2;
 				break;
 			case NND:
@@ -106,7 +106,7 @@ int main(int argc, char ** argv){
 				tempRegB = popFromStack();
 				tempReg = ~(tempReg & tempRegB);
 				pushToStack(tempReg);
-				fprintf(log,"BITWISE NAND RESULT: %x\n",tempReg);
+				fprintf(log,"BITWISE NAND RESULT: 0x%x\n",tempReg);
 				programCounter+=2;
 				break;
 			case HNE:
@@ -115,7 +115,7 @@ int main(int argc, char ** argv){
 			      	tempAddr |= tempReg;
 				if (equalFlag == 0){
 					programCounter = tempAddr;
-					fprintf(log,"CONDITIONAL HOP RESULT: %x\n",tempAddr);
+					fprintf(log,"CONDITIONAL HOP RESULT: 0x%x\n",tempAddr);
 				} else {
 					programCounter+=2;
 				}
@@ -124,7 +124,7 @@ int main(int argc, char ** argv){
 				tempReg = popFromStack();
 				tempAddr = popFromStack() * 16;
 			      	tempAddr |= tempReg;
-				fprintf(log,"UNCONDITIONAL HOP RESULT: %x\n",tempAddr);
+				fprintf(log,"UNCONDITIONAL HOP RESULT: 0x%x\n",tempAddr);
 				programCounter = tempAddr;
 				break;
 			case LZF:

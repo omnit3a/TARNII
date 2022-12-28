@@ -12,6 +12,7 @@ OUTFILE=$(OUTDIR)/tarnii-emu
 all: clean
 	clear
 	$(CC) $(CCINPUT) $(CCFLAGS)
+	$(CC) $(SRCDIR)/assembler/*.c -o $(OUTDIR)/tarnii-asm -I$(HDRDIR)
 	
 clean:
 	rm -rf $(OUTFILE)
