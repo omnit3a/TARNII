@@ -57,7 +57,7 @@ char * findOpcodes(char * input){
 				tempOp = opvals[i];
 				fileSize++;
 				ret[pos++] = tempOp;
-				if (i == 1 || i == 11){
+				if (i == 1 | i == 10){
 					token = strtok(NULL, " \n");
 					tempArg = (int) strtol(token, NULL, 16);	
 					ret[pos++] = tempArg;
