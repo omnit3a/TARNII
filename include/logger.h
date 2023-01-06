@@ -5,4 +5,6 @@
 
 void writeState(FILE * fp);
 
+void writeIO(FILE * fp);
+
 #endif

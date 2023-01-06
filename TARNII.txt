@@ -74,7 +74,7 @@ TARNII has 16 opcodes, those being:
 0x04:	OIN	= pull the MREQ line high, pull the IORQ line low, set the address bus to [ADDRPOP], push the value on the data bus onto the stack. do these in order
 0x08:	STO	= pull the MREQ line low, set the address bus to [ADDRPOP], set the data bus to number A of [VALPOP]. do these in order
 0x10:	LOD	= pull the MREQ line low, set the address bus to [ADDRPOP], push the value on the data bus to the stack. do these in order
-0xBB:	HLT	= halt the cpu until a REST signal is recieved
+0xBB:	HLT	= halt the cpu until a REST signal (rising edge) is recieved
 
 ## CODE EXAMPLES ##
 How to add two numbers:
