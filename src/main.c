@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <opcodes.h>
 #include <ram.h>
 #include <io.h>
@@ -8,17 +9,21 @@
 #include <logger.h>
 
 int main(int argc, char ** argv){
+
+	int usingIO = 0;
+
 	if (argc <= 2){
-		printf("No arguments were passed ;  must pass program file then output file\n");
+		printf("No arguments were passed\n Must pass program file then output file\n");
 		return 1;
 	}
 
-	
+	if (argc == 4 && !strcmp("-io",argv[3])){
+		usingIO = 1;
+	}
+
 	//open files
 	FILE * fp = fopen(argv[1],"r");
 	FILE * log = fopen(argv[2],"w");
-
-	
 	//check if both files exist
 	if (fp == NULL || log == NULL){
 		printf("One or more of the passed files do not exist or could not be accessed\n");
@@ -48,14 +53,23 @@ int main(int argc, char ** argv){
 	unsigned char droppedLSB = 0x00;
 	unsigned char droppedMSB = 0x00;
 
+	// print out what each column represents in the running log
+	rest = 0x01;
+
 	while (1){
+
 		tempAddr = 0x0000;
 		tempData = 0x00;
 		tempReg = 0x00;
 		tempRegB = 0x00;
-		if (memory[programCounter] != 0x00){
-			printf("0x%x %d\n",memory[programCounter],programCounter);
-		}
+		
+		addrBus = 0x0000;
+		dataBus = 0x00;
+		mreq = 0x00;
+		iorq = 0x01;
+		rdwr = 0x00;
+
+		// print out the state of the cpu while running a program
 		switch (memory[programCounter]){
 			case NOP:
 				programCounter+=2;
@@ -112,6 +126,7 @@ int main(int argc, char ** argv){
 			case HNE:
 				tempReg = popFromStack();
 				tempAddr = popFromStack() * 16;
+				tempAddr = tempAddr >> 4;
 			      	tempAddr |= tempReg;
 				if (equalFlag == 0){
 					programCounter = tempAddr;
@@ -123,6 +138,7 @@ int main(int argc, char ** argv){
 			case HOP:
 				tempReg = popFromStack();
 				tempAddr = popFromStack() * 16;
+				tempAddr = tempAddr >> 4;
 			      	tempAddr |= tempReg;
 				fprintf(log,"UNCONDITIONAL HOP RESULT: 0x%x\n",tempAddr);
 				programCounter = tempAddr;
@@ -142,6 +158,28 @@ int main(int argc, char ** argv){
 						break;
 				}
 				programCounter+=2;
+				break;
+			case OUT:
+				if (usingIO){
+					tempReg = popFromStack();
+					tempRegB = popFromStack();
+					printf("%c",tempReg);
+				}
+				programCounter+=2;
+				break;
+			case OIN:
+				if (usingIO){
+					mreq = 0x01;
+					iorq = 0x00;
+					//load data bus
+					dataBus = getc(stdin);
+					pushToStack(dataBus);
+				}
+				programCounter+=2;
+				break;
+			case STO:
+				break;
+			case LOD:
 				break;
 			case HLT:
 				fprintf(log, "\nHALT HALT HALT HALT HALT\n\n");
