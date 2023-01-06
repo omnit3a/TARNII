@@ -126,7 +126,6 @@ int main(int argc, char ** argv){
 			case HNE:
 				tempReg = popFromStack();
 				tempAddr = popFromStack() * 16;
-				tempAddr = tempAddr >> 4;
 			      	tempAddr |= tempReg;
 				if (equalFlag == 0){
 					programCounter = tempAddr;
@@ -138,7 +137,6 @@ int main(int argc, char ** argv){
 			case HOP:
 				tempReg = popFromStack();
 				tempAddr = popFromStack() * 16;
-				tempAddr = tempAddr >> 4;
 			      	tempAddr |= tempReg;
 				fprintf(log,"UNCONDITIONAL HOP RESULT: 0x%x\n",tempAddr);
 				programCounter = tempAddr;
